@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
 Name=Portainer Quick
-Exec=portainer-quick
+Exec=HOME_FOLDER/.local/bin/portainer-quick
 Icon=HOME_FOLDER/.local/share/portainer-quick/portainer.svg
 Path=HOME_FOLDER/.local/share/portainer-quick
 Terminal=false
