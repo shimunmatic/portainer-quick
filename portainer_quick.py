@@ -1,4 +1,4 @@
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QMessageBox, QPushButton
 from enum import Enum
 import sys
@@ -120,6 +120,11 @@ class window(QtWidgets.QWidget):
 
         self.window().setLayout(vbox)
         self.reload_stacks()
+
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(5000)
+        self.timer.timeout.connect(self.reload_stacks)
+        self.timer.start()
 
     def reload_stacks(self):
         stacks = client.get_stacks()
