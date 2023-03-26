@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Portainer Quick
+Exec=portainer-quick
+Icon=HOME_FOLDER/.local/share/portainer-quick/portainer.svg
+Path=HOME_FOLDER/.local/share/portainer-quick
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Utility;Application;
