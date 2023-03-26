@@ -104,7 +104,6 @@ class window(QtWidgets.QWidget):
         super().__init__()
         self.setWindowTitle("Portainer quick client")
         self.setGeometry(500, 200, 500, 400)
-        self.stacks = []
         self.stacksLayout = QtWidgets.QVBoxLayout()
         groupBox = QtWidgets.QGroupBox("Available stacks")
         groupBox.setLayout(self.stacksLayout)
@@ -124,12 +123,11 @@ class window(QtWidgets.QWidget):
 
     def reload_stacks(self):
         stacks = client.get_stacks()
-        for stack in self.stacks:
-            self.stacksLayout.removeWidget(stack)
+        for i in reversed(range(self.stacksLayout.count())):
+            self.stacksLayout.itemAt(i).widget().setParent(None)
         for stack in stacks:
             print(f"Stack {stack.name} with id {stack.id} is in status {stack.status}")
             containerItem = StackItem(stack, lambda: self.sync_clicked())
-            self.stacks.append(containerItem)
             self.stacksLayout.addWidget(containerItem)
 
     def sync_clicked(self):
