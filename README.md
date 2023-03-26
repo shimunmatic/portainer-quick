@@ -16,7 +16,7 @@ Following python dependencies are needed and will be installed during setup:
 ### Installation
 
 ```bash
-git clone 
+git clone https://github.com/shimunmatic/portainer-quick.git
 cd portainer-quick
 chmod +x install .sh
 ./install.sh YOUR_API_KEY
