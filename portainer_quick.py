@@ -36,7 +36,7 @@ class PortainerClient:
             'Content-Type': 'application/json',
             'X-API-Key': self.access_token
         }
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, verify = False)
         list = response.json()
         stacks = []
         for stack in list:
@@ -49,7 +49,7 @@ class PortainerClient:
             'Content-Type': 'application/json',
             'X-API-Key': self.access_token
         }
-        response = requests.post(url, headers=headers)
+        response = requests.post(url, headers=headers, verify = False)
         return response
 
     def stop_stack(self, stack: Stack):
@@ -58,7 +58,7 @@ class PortainerClient:
             'Content-Type': 'application/json',
             'X-API-Key': self.access_token
         }
-        response = requests.post(url, headers=headers)
+        response = requests.post(url, headers=headers, verify = False)
         return response
 
 
