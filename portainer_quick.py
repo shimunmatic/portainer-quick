@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QMessageBox, QPushButton
 from enum import Enum
 import sys
 import json
+from types import SimpleNamespace
 import requests
 import os
 from pathlib import Path
@@ -15,9 +16,10 @@ class StackStatus(Enum):
 
 class Stack:
 
-    def __init__(self, name, status, id):
+    def __init__(self, name, status, id, instance):
         self.name = name
         self.id = id
+        self.instance = instance
         if status == 1:
             self.status = StackStatus.ACTIVE
         else:
@@ -26,43 +28,42 @@ class Stack:
 
 class PortainerClient:
 
-    def __init__(self, url, access_token):
-        self.url = url
-        self.access_token = access_token
+    def __init__(self, instances):
+        self.instances = instances
 
     def get_stacks(self):
-        url = self.url + '/api/stacks'
-        headers = {
-            'Content-Type': 'application/json',
-            'X-API-Key': self.access_token
-        }
-        response = requests.get(url, headers=headers, verify = False)
-        list = response.json()
         stacks = []
-        for stack in list:
-            stacks.append(Stack(stack['Name'], stack['Status'], stack['Id']))
+        for instance in self.instances:
+            if instance.active:
+                url = instance.url + '/api/stacks'
+                headers = {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': instance.apiKey
+                }
+                response = requests.get(url, headers=headers, verify = False)
+                list = response.json()
+                for stack in list:
+                    stacks.append(Stack(stack['Name'], stack['Status'], stack['Id'], instance))
         return stacks
 
     def start_stack(self, stack: Stack):
-        url = f'{self.url}/api/stacks/{stack.id}/start'
+        url = f'{stack.instance.url}/api/stacks/{stack.id}/start'
         headers = {
             'Content-Type': 'application/json',
-            'X-API-Key': self.access_token
+            'X-API-Key': stack.instance.apiKey
         }
         response = requests.post(url, headers=headers, verify = False)
         return response
 
     def stop_stack(self, stack: Stack):
-        url = f'{self.url}/api/stacks/{stack.id}/stop'
+        url = f'{stack.instance.url}/api/stacks/{stack.id}/stop'
         headers = {
             'Content-Type': 'application/json',
-            'X-API-Key': self.access_token
+            'X-API-Key': stack.instance.apiKey
         }
         response = requests.post(url, headers=headers, verify = False)
         return response
 
-
-client = PortainerClient(None, None)
 
 
 class StackItem(QtWidgets.QWidget):
@@ -75,7 +76,7 @@ class StackItem(QtWidgets.QWidget):
             label = "STOP"
         self.button = QPushButton(label)
         self.button.clicked.connect(self.button_clicked)
-        self.labelWidget = QtWidgets.QLabel(stack.name)
+        self.labelWidget = QtWidgets.QLabel(stack.name + " @ " +stack.instance.name)
         horizontalLayout = QtWidgets.QHBoxLayout()
         horizontalLayout.addWidget(self.labelWidget)
         horizontalLayout.addWidget(self.button)
@@ -100,7 +101,7 @@ class StackItem(QtWidgets.QWidget):
 
 
 class window(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, client):
         super().__init__()
         self.setWindowTitle("Portainer quick client")
         self.setGeometry(500, 200, 500, 400)
@@ -115,6 +116,15 @@ class window(QtWidgets.QWidget):
         vbox = QtWidgets.QVBoxLayout()
         syncButton = QtWidgets.QPushButton("Sync")
         syncButton.clicked.connect(self.sync_clicked)
+
+        cb = QtWidgets.QComboBox()
+        cb.addItem("All")
+        for instance in client.instances:
+            cb.addItem(instance.name)
+        cb.currentTextChanged.connect(self.selectionchange)
+
+
+        vbox.addWidget(cb)
         vbox.addWidget(syncButton)
         vbox.addWidget(scroll)
 
@@ -139,10 +149,19 @@ class window(QtWidgets.QWidget):
         print(f"Sync clicked")
         self.reload_stacks()
 
+    def selectionchange(self,i):
+        for instance in client.instances:
+            if i == 'All':
+                instance.active = True
+            elif i == instance.name:
+                instance.active = True
+            else:
+                instance.active = False
+        self.reload_stacks()
 
-def app():
+def app(client):
     app = QtWidgets.QApplication(sys.argv)
-    win = window()
+    win = window(client)
     win.show()
     sys.exit(app.exec())
 
@@ -155,6 +174,7 @@ if not os.path.isfile(config_path):
     with open(config_path, 'w') as config_file:
         json = '''
         {
+            "name":"Example",
             "url": "http://localhost:9000",
             "apiKey": ""
         }
@@ -165,10 +185,14 @@ if not os.path.isfile(config_path):
 
 with open(config_path) as config_file:
     print(config_file.name)
-    config = json.load(config_file)
-    if config['apiKey'] == '':
-        print("Api key not defined")
-        exit(1)
-    client = PortainerClient(config['url'], config['apiKey'])
-
-app()
+    configs = json.load(config_file)
+    instances = json.loads(json.dumps(configs['instances']), object_hook=lambda d: SimpleNamespace(**d))
+    for instance in instances:
+        instance.active = True
+        if instance.apiKey == '' or instance.url == '' or instance.name == '':
+            print(instance)
+            print("Api key or url not defined")
+            exit(1)
+    client = PortainerClient(instances) 
+    
+app(client)
