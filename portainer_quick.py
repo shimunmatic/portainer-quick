@@ -117,14 +117,16 @@ class window(QtWidgets.QWidget):
         syncButton = QtWidgets.QPushButton("Sync")
         syncButton.clicked.connect(self.sync_clicked)
 
-        cb = QtWidgets.QComboBox()
-        cb.addItem("All")
-        for instance in client.instances:
-            cb.addItem(instance.name)
-        cb.currentTextChanged.connect(self.selectionchange)
 
 
-        vbox.addWidget(cb)
+        if len(client.instances) > 1:
+            cb = QtWidgets.QComboBox()
+            cb.addItem("All")
+            for instance in client.instances:
+                cb.addItem(instance.name)
+            cb.currentTextChanged.connect(self.selectionchange)
+            vbox.addWidget(cb)
+
         vbox.addWidget(syncButton)
         vbox.addWidget(scroll)
 
@@ -174,9 +176,14 @@ if not os.path.isfile(config_path):
     with open(config_path, 'w') as config_file:
         json = '''
         {
-            "name":"Example",
-            "url": "http://localhost:9000",
-            "apiKey": ""
+            "instances" :
+                        [
+                            {
+                                "name": "NAME",
+                                "url": "https://127.0.0.1:9443",
+                                "apiKey": ""
+                            }
+                        ]
         }
         '''
         config_file.write(json)
