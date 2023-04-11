@@ -14,7 +14,7 @@ sed -i "s|HOME_FOLDER|${HOME}|g" ~/.local/share/applications/portainer-quick.des
 mkdir -p ~/.config/portainer-quick
 if [ ! -f ~/.config/portainer-quick/config.json ]
 then
-  echo -e "{\n\t\"url\": \"http://localhost:9000\",\n\t\"apiKey\":\"${API_KEY}\"\n}" > ~/.config/portainer-quick/config.json
+  echo -e "[{\n\t\"name\": \"Local\",\n\t\"url\": \"http://localhost:9000\",\n\t\"apiKey\":\"${API_KEY}\"\n}]" > ~/.config/portainer-quick/config.json
 fi
 
 pip3 install PyQt6
