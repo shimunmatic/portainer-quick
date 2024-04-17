@@ -47,7 +47,7 @@ class PortainerClient:
         return stacks
 
     def start_stack(self, stack: Stack):
-        url = f'{stack.instance.url}/api/stacks/{stack.id}/start'
+        url = f'{stack.instance.url}/api/stacks/{stack.id}/start?endpointId={stack.instance.environmentId}'
         headers = {
             'Content-Type': 'application/json',
             'X-API-Key': stack.instance.apiKey
@@ -56,7 +56,7 @@ class PortainerClient:
         return response
 
     def stop_stack(self, stack: Stack):
-        url = f'{stack.instance.url}/api/stacks/{stack.id}/stop'
+        url = f'{stack.instance.url}/api/stacks/{stack.id}/stop?endpointId={stack.instance.environmentId}'
         headers = {
             'Content-Type': 'application/json',
             'X-API-Key': stack.instance.apiKey
@@ -179,9 +179,11 @@ if not os.path.isfile(config_path):
             "instances" :
                         [
                             {
+                                "active: false,
                                 "name": "NAME",
                                 "url": "https://127.0.0.1:9443",
-                                "apiKey": ""
+                                "apiKey": "",
+                                "environmentId": 0
                             }
                         ]
         }
@@ -196,7 +198,7 @@ with open(config_path) as config_file:
     instances = json.loads(json.dumps(configs['instances']), object_hook=lambda d: SimpleNamespace(**d))
     for instance in instances:
         instance.active = True
-        if instance.apiKey == '' or instance.url == '' or instance.name == '':
+        if instance.apiKey == '' or instance.url == '' or instance.name == '' or instance.environmentId == 0:
             print(instance)
             print("Api key or url not defined")
             exit(1)
