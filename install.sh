@@ -17,4 +17,4 @@ then
   echo -e "{ \"instances\":[{\n\t\"name\": \"Local\",\n\t\"url\": \"http://localhost:9000\",\n\t\"apiKey\":\"${API_KEY}\",\n\t\"environmentId\": 0, \n\t\"active\": true\n}]}" > ~/.config/portainer-quick/config.json
 fi
 
-pip3 install PyQt6
+pip3 install PyQt6 PyQt6-Qt6Svg
